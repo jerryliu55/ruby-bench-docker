@@ -1,0 +1,5 @@
+#!/bin/bash
+set -e
+
+gem install liquid benchmark-ips
+ruby /ruby-bench-suite/liquid/benchmarks/driver.rb --local
