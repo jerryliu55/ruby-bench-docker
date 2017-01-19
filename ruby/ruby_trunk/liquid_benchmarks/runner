@@ -1,0 +1,34 @@
+#!/bin/bash
+set -e
+
+cd /ruby-bench-suite
+# branch is temporary (should be master)
+git pull --rebase origin submodule-liquid
+
+git submodule init
+git submodule update
+
+cd /ruby
+git pull --rebase origin trunk
+
+if [ -z "$RUBY_COMMIT_HASH" ]; then
+  echo "Running benchmarks using lastest Ruby commit"
+else
+  echo "Running benchmarks using Ruby commit $RUBY_COMMIT_HASH"
+  git reset --hard $RUBY_COMMIT_HASH
+fi
+
+autoconf
+./configure --disable-install-doc --prefix=/root/.rbenv/versions/trunk --quiet
+make --quiet -j
+make install --quiet -j
+rbenv global trunk
+
+if [ "$INCLUDE_PATTERNS" ]; then
+  PATTERNS="--pattern $INCLUDE_PATTERNS"
+fi
+
+# Install gem dependencies to run the benchmarks
+gem install benchmark-ips --no-ri --no-rdoc
+
+ruby /ruby-bench-suite/liquid_benchmarks/driver.rb $PATTERNS
