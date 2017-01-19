@@ -1,0 +1,45 @@
+#!/bin/bash
+set -e
+
+cd /ruby-bench-suite
+# branch is temporary
+git pull --rebase origin submodule-liquid
+
+git submodule init
+git submodule update
+
+cd /ruby
+git pull --rebase origin trunk
+
+if [ -z "$RUBY_COMMIT_HASH" ]; then
+  echo "Running benchmarks using lastest Ruby commit"
+else
+  echo "Running benchmarks using Ruby commit $RUBY_COMMIT_HASH"
+  git reset --hard $RUBY_COMMIT_HASH
+fi
+
+autoconf
+./configure --disable-install-doc --prefix=/root/.rbenv/versions/trunk --quiet
+make --quiet -j
+make install --quiet -j
+rbenv global trunk
+
+# cd /liquid
+# git pull --rebase origin master
+
+# move some liquid/performance files to bench-suite
+# kind of unsure about the dependency on the repo, if things change it might break everything
+# mv /liquid/performance/tests      /ruby-bench-suite/liquid/benchmarks/support
+# rm /liquid/performance/shopify/liquid.rb
+# mv /liquid/performance/shopify/* /ruby-bench-suite/liquid/benchmarks/support/shopify
+# mv /liquid/performance/theme_runner.rb /ruby-bench-suite/liquid/benchmarks/support
+
+if [ "$INCLUDE_PATTERNS" ]; then
+  PATTERNS="--pattern $INCLUDE_PATTERNS"
+fi
+
+# Install gem dependencies to run the benchmarks
+gem install benchmark-ips --no-ri --no-rdoc
+
+# --local is temporary
+ruby /ruby-bench-suite/liquid_benchmarks/driver.rb $PATTERNS
