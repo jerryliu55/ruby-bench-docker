@@ -14,16 +14,6 @@ rbenv global $RUBY_VERSION
 echo "Checking RUBY_VERSION in environment"
 echo "RUBY_VERSION=$RUBY_VERSION"
 
-# cd /liquid
-# git pull --rebase origin master
-
-# move some liquid/performance files to bench-suite
-# kind of unsure about the dependency on the repo, if things change it might break everything
-# mv /liquid/performance/tests      /ruby-bench-suite/liquid/benchmarks/support
-# rm /liquid/performance/shopify/liquid.rb
-# mv /liquid/performance/shopify/* /ruby-bench-suite/liquid/benchmarks/support/shopify
-# mv /liquid/performance/theme_runner.rb /ruby-bench-suite/liquid/benchmarks/support
-
 if [ "$INCLUDE_PATTERNS" ]; then
   PATTERNS="--pattern $INCLUDE_PATTERNS"
 fi
@@ -31,6 +21,5 @@ fi
 # Install gem dependencies to run the benchmarks
 gem install benchmark-ips --no-ri --no-rdoc
 
-# --local is temporary
 echo "Running benchmarks with Ruby $RUBY_VERSION"
 ruby /ruby-bench-suite/liquid_benchmarks/driver.rb $PATTERNS
